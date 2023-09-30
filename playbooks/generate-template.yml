@@ -2,7 +2,7 @@
 # This playbook does the following:
 # 1. Generate a generic template image
 
-- hosts: servers
+- hosts: virtualmachine
   gather_facts: no
   serial: 1
   roles: 
