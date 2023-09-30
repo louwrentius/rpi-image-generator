@@ -1,0 +1,19 @@
+---
+# This playbook does the following:
+# 1. Full setup and configuration of Linux virtual machine/host for custom image generation
+# 2. Generate a generic template image
+# 3. Generate an individual pi image 
+# 4. Write image to SD card
+
+- hosts: servers
+  gather_facts: no
+  serial: 1
+  roles: 
+    - hostconfig
+    - fetch-image
+    - create-template
+    - generate-image
+    - write-image
+
+
+  

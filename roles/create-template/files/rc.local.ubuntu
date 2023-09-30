@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+if [ ! -f "/etc/ssh/ssh_host_ecdsa_key" ]
+then
+	systemctl stop ssh
+	systemctl stop snapd
+	systemctl stop unattended-upgrades
+	echo "Generating server side SSH keys..."
+	dpkg-reconfigure openssh-server
+	ln -s /usr/bin/python3 /usr/bin/python
+	#apt-get remove unattended-upgrades -y
+	echo "Resizing file system"
+	growpart /dev/mmcblk0 2
+	resize2fs /dev/mmcblk0p2
+	systemctl start ssh
+	#Uncomment this section to make IP address visible on console
+	#echo "Welcome to Raspbery Pi {{ inventory_hostname_short }}" > /etc/issue
+	#ip ad | grep global | awk '{ print $2 }' | cut -d "/" -f 1 >> /etc/issue
+	sleep 20
+fi
+echo "rc.local executed." | logger
+exit 0

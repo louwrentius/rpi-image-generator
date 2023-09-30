@@ -1,0 +1,53 @@
+---
+### Settings for host or virtual machine on which we will generate the images
+# Ansible will use this Linux host for downloading and customising images.
+# - This host can be any architecture x86, ARM or other. 
+# - The host must have internet access
+# - passwordless sudo is expected for the image_host_user
+# - Have at least 10GB free for generating images
+image_host: 10.0.1.16  # CHANGE THIS
+image_host_user: ansible 
+
+# The working directory is where all images will be stored on the image host.
+# It is advised to use an SSD or a RAID array for the underlying storage to speed up the template/image generation.
+# Even a USB3 SSD is already a huge improvement over a single internal HDD or microSD card (in case you use a Pi).
+working_directory: /image/rpi
+
+# The temporary mount point is the location under wich images will be mounted for editing on the image host.
+# Like: /mnt/temporary/pi_host_01
+temporary_mount_point: /mnt/temporary
+
+# End of settings for host
+
+### Raspberry Pi OS 
+distro: debian # Will be Raspbian OS, other option is 'ubuntu'
+
+### SD card settings (Only tested on MacOS)
+# The device that represents the SD card reader/writer
+# Linux:  use sdx like 'sdc'  
+# MacOS:  use diskx like 'disk4' (rdisk device will be used under the hood, for better performance) 
+#         use 'diskutil list' or Disk Utility to determine the device name
+# 
+sdcard: disk4 # ====> ⚠️ WARINING ⚠️ <==== MAKE SURE YOU SELECT THE CORRECT STORAGE DEVICE
+
+# The max SDCARD size helps determine if we are not accidentally overwriting the wrong device.
+# if the storage device is larger than this number, it will generate an error.
+sdcard_max_size: 65000000000 #~64GB default
+                 
+# Plays a sound when the SD card is ready and can be inserted into the Raspberry Pi.
+# MacOS only 
+enable_sound: true
+
+# There is a post_image role that waits for the SD card to be inserted into the Pi 
+# and the Pi to be booted from it. Once the Pi is up, the post_image role continues executing tasks.
+# By default there are no additional tasks, it's up to you to add tasks to this role.
+# By adding some tasks to the role and setting post_image below to 'true' the post_image role will run.  
+post_image: false
+
+# SSH access is only possible with the key configured in the inventory/shared/authorized_keys file
+# To debug issues with generated images, password authentication can be enabled below
+ansible_user_password_enabled: false
+# Use the mkpasswd -m SHA-512 command to generate a password hash and copy it in the ansible_user_password_hash variable
+# It would be very wise to put the hash in an ansible vault but I leave that to you
+ansible_user_password_hash: $6$5igsyMXSJ28$gie.o51YZB7J3UoOSP.PpXGLfBvdAYyAEP0SDnhxHhSubIyLC6bh5FGcr6flNR3bAjDixGqawyKQufYFQ5OdR/
+# Default password is 'ansible'

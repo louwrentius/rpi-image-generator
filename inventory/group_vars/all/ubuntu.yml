@@ -1,0 +1,20 @@
+---
+ubuntu_version_name: jammy 
+ubuntu_version: 22.04.2
+ubuntu_mirror: ports.ubuntu.com
+
+# No changes should be required below this line. 
+ubuntu_image_url_base: "http://cdimage.ubuntu.com/releases/{{ ubuntu_version_name }}/release/"
+ubuntu_image_name: "ubuntu-{{ ubuntu_version }}-preinstalled-server-arm64+raspi.img"
+ubuntu_image_url: "{{ ubuntu_image_url_base }}{{ ubuntu_image_name }}.xz"
+ubuntu_raw_image_file: "{{ working_directory }}/{{ ubuntu_image_name }}"
+ubuntu_image_file_compressed: "{{ ubuntu_raw_image_file }}.xz"
+ubuntu_shasum: "{{ ubuntu_image_url_base }}/SHASUMS"
+ubuntu_shasum_file: "ubuntu_shasum"
+
+ubuntu_extra_packages:
+  - dstat 
+  - tcpdump
+  - sysstat 
+  - htop
+  - screen

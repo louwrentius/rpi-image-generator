@@ -1,0 +1,7 @@
+---
+- name: Mount special filesystems in chroot envirounment
+  shell: |
+    mount -t sysfs none {{ image_template_mountpoint }}/sys
+    mount -t proc none {{ image_template_mountpoint }}/proc
+    mount --bind /dev/ {{ image_template_mountpoint }}/dev
+    mount --bind /dev/pts {{ image_template_mountpoint }}/dev/pts

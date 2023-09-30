@@ -1,0 +1,5 @@
+- hosts: servers
+  gather_facts: no
+  serial: 1
+  roles: 
+    - write-image

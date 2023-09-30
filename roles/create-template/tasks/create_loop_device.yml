@@ -1,0 +1,13 @@
+---
+- name: Create loop device with losetup for partition mounting 
+  shell: "losetup --find --partscan --show {{ image_template }}"
+  register: loopdevice
+  changed_when: false
+  when: not registerloop.stdout
+
+- name: Create loop device with losetup for partition mounting 
+  set_fact:
+    loopdevice: 
+      stdout: "{{ registerloop.stdout }}"
+  changed_when: false
+  when: registerloop.stdout

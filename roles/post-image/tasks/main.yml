@@ -1,0 +1,6 @@
+---
+
+- include: post-image.yml
+  remote_user: "{{ image_host_user }}"
+  tags: post-image
+  when: post_image 

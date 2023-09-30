@@ -1,0 +1,23 @@
+---
+- include: check_mounts.yml
+- include: create_loop_device.yml
+  
+- name: Wait a few seconds to prevent a race condition
+  wait_for:
+    timeout: 2
+
+- name: loop device
+  debug:
+    msg: "{{ loopdevice }}"
+
+- name: Mount the loop device on a ROOT mountpoint 
+  ansible.builtin.shell: "mount {{ loopdevice.stdout }}p2 {{ image_template_mountpoint }}"
+  changed_when: False
+  when: registermount | length == 0
+
+- name: Mount the loop device on a BOOT mountpoint 
+  ansible.builtin.shell: "mount {{ loopdevice.stdout }}p1 {{ image_template_mountpoint }}/boot"
+  changed_when: False
+  when: registermount | length == 0
+
+- include: check_mounts.yml

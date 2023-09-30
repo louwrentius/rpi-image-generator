@@ -1,0 +1,9 @@
+---
+image_url_base: "{{ lookup('ansible.builtin.vars', distro + '_image_url_base'  ) }}"
+image_name: "{{ lookup('ansible.builtin.vars', distro + '_image_name'  ) }}"
+image_url: "{{ lookup('ansible.builtin.vars', distro + '_image_url'  ) }}"
+raw_image_file: "{{ lookup('ansible.builtin.vars', distro + '_raw_image_file'  ) }}"
+image_file_compressed: "{{ lookup('ansible.builtin.vars', distro + '_image_file_compressed'  ) }}"
+shasum: "{{ lookup('ansible.builtin.vars', distro + '_shasum'  ) }}"
+shasum_file: "{{ lookup('ansible.builtin.vars', distro + '_shasum_file'  ) }}"
+extra_packages: "{{ lookup('ansible.builtin.vars', distro + '_extra_packages'  ) }}"

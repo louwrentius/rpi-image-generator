@@ -1,0 +1,46 @@
+---
+
+- name: Check if an distro image exist on the Pi host
+  stat:
+    path: "{{ raw_image_file }}"
+    get_checksum: no
+  register: image 
+  tags:
+    - test
+
+- name: Download image checksum if it does not exist
+  get_url:
+    url: "{{ image_checksum_url }}"
+    dest: "{{ image_checksum_file }}"
+  when: image.stat.exists == False  
+  tags:
+    - cloud_image
+
+- name: Get checksum for image from downloaded file
+  shell: "cat {{ image_checksum_file }} | grep {{ image_name }} | awk '{ print $1 }'"
+  register: checksum
+  when: image.stat.exists == False 
+  tags:
+    - cloud_image
+
+- name: Download image if it does not exist
+  get_url:
+    url: "{{ image_url }}"
+    dest: "{{ image_file_compressed }}"
+    checksum: "sha256:{{ checksum.stdout }}"
+  register: was_image_downloaded
+  when: image.stat.exists == False 
+  tags:
+    - cloud_image
+
+- name: Decompress the image
+  shell: 
+   cmd: "unxz {{ image_file_compressed }}"
+   chdir: "{{ working_directory }}"
+  when: image.stat.exists == False
+
+- name: force software install and update if image is new
+  set_fact:
+    force_template_software_update: yes
+    force_template_patch_update: yes
+  when: image.stat.exists == False

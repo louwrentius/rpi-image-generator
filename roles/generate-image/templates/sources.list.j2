@@ -1,0 +1,13 @@
+deb http://{{ ubuntu_mirror }}/ubuntu-ports/ {{ ubuntu_version_name }} main restricted
+deb http://{{ubuntu_mirror}}/ubuntu-ports/ {{ ubuntu_version_name }}-updates main restricted
+deb http://{{ ubuntu_mirror }}/ubuntu-ports/ {{ ubuntu_version_name }} universe
+deb http://{{ ubuntu_mirror }}/ubuntu-ports/ {{ ubuntu_version_name }}-updates universe
+
+deb http://{{ ubuntu_mirror }}/ubuntu-ports/ {{ ubuntu_version_name }} multiverse
+deb http://{{ ubuntu_mirror }}/ubuntu-ports/ {{ ubuntu_version_name }}-updates multiverse
+
+deb http://{{ ubuntu_mirror }}/ubuntu-ports/ {{ ubuntu_version_name }}-backports main restricted universe multiverse
+
+deb http://{{ ubuntu_mirror }}/ubuntu-ports/ {{ ubuntu_version_name }}-security main restricted
+deb http://{{ ubuntu_mirror }}/ubuntu-ports/ {{ ubuntu_version_name }}-security universe
+deb http://{{ ubuntu_mirror }}/ubuntu-ports/ {{ ubuntu_version_name }}-security multiverse

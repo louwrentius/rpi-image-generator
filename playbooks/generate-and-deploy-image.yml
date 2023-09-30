@@ -1,0 +1,11 @@
+---
+# This playbook does the following:
+# 1. Generate an individual pi image 
+# 2. Write image to SD card
+- hosts: servers
+  gather_facts: no
+  serial: 1
+  roles: 
+    - generate-image
+    - write-image
+    - post-image

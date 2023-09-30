@@ -1,0 +1,16 @@
+# interfaces(5) file used by ifup(8) and ifdown(8)
+# Include files from /etc/network/interfaces.d:
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+ 
+# The primary network interface
+auto eth0
+iface eth0 inet static
+    address {{ ansible_host }}
+    netmask {{ netmask_dotted }}
+    gateway {{ gateway }}
+    dns-domain {{ domain }}
+    dns-nameservers {{ dns_server }}

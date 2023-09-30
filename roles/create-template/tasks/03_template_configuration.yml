@@ -1,0 +1,145 @@
+---
+- name: Configure Locale on Debian
+  ansible.builtin.copy:
+    dest: "{{ image_template_mountpoint }}/etc/locale.gen"
+    content: |
+      {{ debian_locale }}
+  when: distro == 'debian'
+
+- name: Configuring apt
+  ansible.builtin.template:
+    src: "{{ distro }}_sources.list.j2"
+    dest: "{{ image_template_mountpoint }}/etc/apt/sources.list"
+  when: distro == 'ubuntu'
+
+- name: Disable userconfig on raspberry pi os
+  ansible.builtin.file:
+    path: "{{ image_template_mountpoint }}/etc/systemd/system/multi-user.target.wants/userconfig.service"
+    state: absent
+  when: distro == 'debian'
+
+- name: Install rc.local for locale gen and enabling SSH
+  copy:
+    src: "rc.local.{{ distro }}" 
+    dest: "{{ image_template_mountpoint }}/etc/rc.local"
+    mode: '0755'
+                                                                                
+- name: Install sudoers file
+  copy:
+    src: sudoers 
+    dest: "{{ image_template_mountpoint }}/etc/sudoers"
+    mode: '0440'
+
+- name: Prevent snapd from starting
+  file:
+    path: "{{ image_template_mountpoint }}/etc/systemd/system/multi-user.target.wants/snapd.service"
+    state: absent 
+  when: distro == 'ubuntu'
+
+- name: Disable automatic apt upgrade on first boot
+  ansible.builtin.lineinfile:
+    path: "{{ image_template_mountpoint }}/etc/apt/apt.conf.d/20auto-upgrades"
+    search_string: 'APT::Periodic::Unattended-Upgrade "1";'
+    line: APT::Periodic::Unattended-Upgrade "0";
+  when: distro == 'ubuntu'
+    
+- name: add user ansible on Ubuntu
+  lineinfile:
+    path: "{{ image_template_mountpoint }}/etc/passwd"
+    line: ansible:x:1000:1000:,,,:/home/ansible:/bin/bash
+  when: distro == 'ubuntu'
+
+- name: add user ansible on debian
+  ansible.builtin.replace:
+    path: "{{ image_template_mountpoint }}/etc/passwd"
+    regexp: 'pi:x:1000:1000:,,,:/home/pi:/bin/bash'
+    replace: 'ansible:x:1000:1000:,,,:/home/ansible:/bin/bash'
+  when: distro == 'debian'
+
+- name: Make home directory for ansible user + .ssh directory
+  file:
+    path: "{{ image_template_mountpoint }}/home/ansible/.ssh"
+    state: directory
+    owner: ansible
+    mode: 0700
+
+- name: Make .ssh directory for root
+  file:
+    path: "{{ image_template_mountpoint }}/root/.ssh"
+    state: directory
+    owner: root
+    mode: 0700
+
+- name: Copy ssh key for ansible user
+  copy:
+    src: "{{ inventory_dir }}/shared/authorized_keys"
+    dest: "{{ image_template_mountpoint }}/home/ansible/.ssh/authorized_keys"
+    mode: '0655'
+
+- name: Copy ssh key for root user
+  copy:
+    src: "{{ inventory_dir }}/shared/authorized_keys"
+    dest: "{{ image_template_mountpoint }}/root/.ssh/authorized_keys"
+    mode: '0655'
+
+- name: Remove existing password if present
+  lineinfile:
+    path: "{{ image_template_mountpoint }}/etc/shadow"
+    state: absent
+    regexp: '^ansible'
+  when: ansible_user_password_enabled
+
+- name: Create vanilla shadow entry if password should not be set
+  lineinfile:
+    path: "{{ image_template_mountpoint }}/etc/shadow"
+    regexp: '^ansible'
+    line: 'ansible:*:18312:0:99999:7:::'
+  when: not ansible_user_password_enabled
+
+- name: Add password for ansible user
+  lineinfile:
+    path: "{{ image_template_mountpoint }}/etc/shadow"
+    line: 'ansible:{{ ansible_user_password_hash }}:18312:0:99999:7:::'
+  when: ansible_user_password_enabled
+
+- name: Edit group file on Raspberry Pi OS to replace pi with ansible
+  ansible.builtin.replace:
+     path: "{{ image_template_mountpoint }}/etc/group"
+     regexp: ':pi'
+     replace: ':ansible'
+  when: distro == 'debian'
+
+- name: Disable cloud init
+  copy:
+    content: ""
+    dest: "{{ image_template_mountpoint }}/etc/cloud/cloud-init.disabled"
+  when: distro == 'ubuntu'
+
+- name: Really disable cloud-init software
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/systemd/system/cloud-config.service.d
+    - /etc/systemd/system/cloud-final.service.wants
+    - /etc/systemd/system/cloud-init-local.service.d
+  tags: test
+  when: distro == 'ubuntu'
+  
+- name: Remove snapd and cloud-init 
+  apt: 
+    pkg: 
+      - snapd
+      - cloud-init
+    state: absent
+  when: distro == 'ubuntu'
+
+- name: check architecture
+  setup:
+  tags: 
+    - install_qemu 
+    - message
+  when: ansible_architecture is not defined
+
+- include: resize_image.yml # umounts the image
+

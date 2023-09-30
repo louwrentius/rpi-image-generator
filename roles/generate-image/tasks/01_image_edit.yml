@@ -1,0 +1,83 @@
+---
+
+- name: check if sparse copy of template exists for this host
+  stat:
+    path: /{{ working_directory }}/{{ inventory_hostname_short }}
+    get_checksum: no
+  register: sparsecopy
+
+- name: Make sparse dd copy of template volume
+  shell: "dd if={{ image_template }} of=/{{ working_directory }}/{{ inventory_hostname_short }} conv=sparse bs=1M"
+  when: sparsecopy.stat.exists == False or force_image_update is defined
+
+- name: Create temporary mount point directory
+  file:
+    path: "{{ chrootdir }}"
+    state: directory
+
+- name: Fetch existing loop devices
+  shell: "losetup --list"
+  register: loop_exists
+  changed_when: false
+
+- name: Check if loop device exists
+  fail: 
+    msg: "Loop device for {{ inventory_hostname_short }} exists. Please investigate."
+  when: inventory_hostname_short in loop_exists.stdout
+
+- name: Check if image is alreay mounted 
+  stat:
+    path: "{{ chrootdir }}/vmlinuz"
+  register: mountexists
+
+- name: Create loop device with losetup for partition  mounting 
+  shell: "losetup --find --partscan --show /{{ working_directory }}/{{ inventory_hostname_short }}"
+  changed_when: False
+  register: loopdevice
+  when: mountexists.stat.exists == False
+
+- name: Wait a few seconds to prevent a race condition
+  wait_for:
+    timeout: 2
+  when: mountexists.stat.exists == False
+
+- name: Mount the loop device on a mountpoint 
+  ansible.builtin.shell: "mount {{ loopdevice.stdout }}p2 {{ chrootdir }}"
+  changed_when: False
+  when: 
+    - mountexists.stat.exists == False
+
+- name: Change the hostname in hosts
+  lineinfile:
+    dest: "{{ chrootdir }}/etc/hosts"
+    regexp: '^127\.0\.0\.1[ \t]+localhost'
+    line: '127.0.0.1 localhost {{ inventory_hostname_short }}'
+    state: present
+
+- name: Change hostname in hostname
+  copy:
+    content: "{{ inventory_hostname_short }}"
+    dest: "{{ chrootdir }}/etc/hostname"
+
+- name: Configure networking for ubuntu
+  template:
+    src: netplan.yml.j2
+    dest: "{{ chrootdir }}/etc/netplan/01-netcfg.yaml"
+  tags:
+    - networking
+  when: distro == 'ubuntu'
+
+- name: Configure networking for debian / Raspbian
+  template: 
+    src: interfaces.j2
+    dest: "{{ chrootdir }}/etc/network/interfaces"
+  when: distro == 'debian'
+
+- name: Umount partition on loop device
+  shell: "umount {{ chrootdir }}"
+  changed_when: False
+  
+- name: Remove losetup device 
+  shell: "losetup -d {{ loopdevice.stdout }}"
+  changed_when: False
+

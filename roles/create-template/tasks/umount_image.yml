@@ -1,0 +1,17 @@
+---
+- include: check_mounts.yml
+
+- name: Umount boot partition on loop device
+  shell: "umount {{ image_template_mountpoint }}/boot"
+  changed_when: False
+  when: registermount | length != 0
+
+- name: Umount root partition on loop device
+  shell: "umount {{ image_template_mountpoint }}"
+  changed_when: False
+  when: registermount | length != 0
+
+- name: Remove losetup device 
+  shell: "losetup -d {{ registerloop.stdout }}"
+  changed_when: False
+  when: registerloop.stdout

@@ -1,0 +1,7 @@
+---
+- include: fetch_image.yml
+  delegate_to: '{{ image_host }}'
+  remote_user: "{{ image_host_user }}"
+  tags:
+    - fetch_image
+

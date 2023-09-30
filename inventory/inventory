@@ -1,0 +1,24 @@
+[virtualmachine] # this name should not be changed
+pi-image-generator ansible_host=10.0.1.16
+
+[servers:children] # this name should not be changed
+rpis
+
+[all:vars] 
+ansible_python_interpreter=/usr/bin/python3
+
+[rpis]
+#
+# This inventory is generated with this command:
+# for x in `seq -w 1 10`; do echo "pi$x ansible_host=10.0.1.1$x"; done
+#
+pi01 ansible_host=10.0.1.101
+pi02 ansible_host=10.0.1.102
+pi03 ansible_host=10.0.1.103
+pi04 ansible_host=10.0.1.104
+pi05 ansible_host=10.0.1.105
+pi06 ansible_host=10.0.1.106
+pi07 ansible_host=10.0.1.107
+pi08 ansible_host=10.0.1.108
+pi09 ansible_host=10.0.1.109
+pi10 ansible_host=10.0.1.110

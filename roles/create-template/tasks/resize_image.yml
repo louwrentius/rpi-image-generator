@@ -1,0 +1,42 @@
+---
+- name: Register mountpoint size if mountpoint exists
+  set_fact: 
+    mountsize: "{{ registermount | first  }} "
+  when: registermount
+
+- name: Register mountpoint fake size if no mountpoint exists
+  set_fact: 
+    mountsize: 
+      size_available: 6000000000
+  when: registermount is not defined
+
+- name: Enlarge image file if free space is less than 500 Megabytes
+  shell: "dd if=/dev/zero bs=1M count=500 >> {{ image_template }}"
+  when: mountsize.size_available < 600000000
+  register: enlarged
+
+- include: check_mounts.yml
+- include: create_loop_device.yml
+
+- name: Resize partition if template image has been enlarged
+  vars:
+    loopdev: "{{ loopdevice.stdout }}"
+  shell: "echo '- +' | sfdisk -N 2 {{ loopdev }}"
+  when: enlarged.changed
+
+- name: Force fchk on filesystem
+  vars:
+    loopdev: "{{ loopdevice.stdout }}"
+  shell: "e2fsck -y -f {{ loopdev }}p2"
+  when: enlarged.changed
+
+- name: Resize filesystem if tempalte image has been enlarged
+  vars:
+    loopdev: "{{ loopdevice.stdout }}"
+  shell: "resize2fs {{ loopdev }}p2"
+  when: enlarged.changed
+
+- name: Remove losetup device 
+  shell: "losetup -d {{ loopdevice.stdout }}"
+  changed_when: False
+  when: enlarged.changed

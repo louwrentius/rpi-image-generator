@@ -1,0 +1,8 @@
+---
+- name: Umount all special devices
+  shell: |
+    umount {{ image_template_mountpoint }}/sys
+    umount {{ image_template_mountpoint }}/proc
+    umount {{ image_template_mountpoint }}/dev/pts
+    umount {{ image_template_mountpoint }}/dev
+    

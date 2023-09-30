@@ -1,0 +1,10 @@
+---
+# There should be no need to change these variables
+image_template: "{{ working_directory }}/{{ image_name }}.template"
+image_checksum_url: "{{ shasum }}"
+image_checksum_file: "{{ working_directory }}/{{ shasum_file }}"
+custom_image: "{{ working_directory}}/{{ inventory_hostname_short }}"
+chrootdir: "{{ temporary_mount_point }}/{{ inventory_hostname_short }}"
+image_template_mountpoint: "{{ temporary_mount_point }}/template"
+sdcard_raw: "r{{ sdcard }}"
+

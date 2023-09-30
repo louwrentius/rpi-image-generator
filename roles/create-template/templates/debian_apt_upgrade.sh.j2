@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+export DEBIAN_FRONTEND=noninteractive
+export DEBIAN_PRIORITY=critical
+
+apt update
+ERROR=$?
+
+if [[ $ERROR == 0 ]]
+then
+    #apt upgrade -y
+    sudo -E apt-get -qy -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" upgrade
+else
+    echo "ERROR WITH DNS?"
+    exit 1
+fi

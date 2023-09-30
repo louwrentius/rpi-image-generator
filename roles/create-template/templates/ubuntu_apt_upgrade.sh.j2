@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+export FLASH_KERNEL_SKIP=1
+
+systemctl disable unattended-upgrades
+
+mv /etc/resolv.conf /etc/resolv.conf.old
+echo "nameserver 10.0.1.1" > /etc/resolv.conf
+
+apt update
+ERROR=$?
+
+if [[ $ERROR == 0 ]]
+then
+    apt remove flash-kernel -y
+    apt upgrade -y
+    apt install {{ extra_packages | join(' ') }}
+else
+    echo "ERROR WITH DNS?"
+    exit 1
+fi
+
+rm /etc/resolv.conf
+mv /etc/resolv.conf.old /etc/resolv.conf

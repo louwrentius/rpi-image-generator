@@ -1,0 +1,21 @@
+---
+# DEBIAN MEANS RASPBERRY PI OS
+debian_version: "bullseye"
+debian_image_url_base: "https://downloads.raspberrypi.org/raspios_lite_arm64/images/raspios_lite_arm64-2023-05-03"
+debian_image_name: 	2023-05-03-raspios-bullseye-arm64-lite.img
+debian_image_url: "{{ debian_image_url_base }}/{{ debian_image_name }}.xz"
+debian_raw_image_file: "{{ working_directory }}/{{ debian_image_name }}"
+debian_image_file_compressed: "{{ working_directory }}/{{ debian_image_name }}.xz"
+debian_shasum: "{{ debian_image_url }}.sha256"
+debian_shasum_file: "debian_shasum"
+
+debian_locale: en_US.UTF-8 UTF-8
+
+debian_extra_packages:
+  - dstat 
+  - tcpdump
+  - sysstat 
+  - htop
+  - cloud-guest-utils
+  - screen
+  - vim

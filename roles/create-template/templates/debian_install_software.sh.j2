@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+export DEBIAN_FRONTEND=noninteractive
+export DEBIAN_PRIORITY=critical
+
+apt update
+ERROR=$?
+
+if [[ $ERROR == 0 ]]
+then
+    apt install {{ extra_packages | join(' ') }} -y
+else
+    echo "ERROR WITH DNS?"
+    exit 1
+fi

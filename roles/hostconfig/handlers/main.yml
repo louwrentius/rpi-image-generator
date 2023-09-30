@@ -1,0 +1,8 @@
+---
+
+- name: restart nfs kernel server
+  delegate_to: '{{ image_host }}'
+  remote_user: "{{ image_host_user }}"
+  ansible.builtin.service:
+    name: nfs-kernel-server
+    state: restarted

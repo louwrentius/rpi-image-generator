@@ -1,0 +1,31 @@
+---
+- include: check_mounts.yml
+
+- name: Check if there isn't any loop device setup
+  vars:
+    message: |
+            ################################################################
+            Loop device for image exists. Please investigate.
+            {{ registerloop.stdout }} --> {{ image_template }}
+            ################################################################
+  debug: 
+    msg: "{{ message.split('\n') }}"
+  failed_when: true
+  when: registerloop.stdout
+
+- name: check if sparse copy of template exists for this host
+  stat:
+    path: "{{ working_directory }}/{{ image_name }}.template"
+    get_checksum: no
+  register: sparsecopy
+
+- name: Create temporary mount point directory
+  file:
+    path: "{{ image_template_mountpoint }}"
+    state: directory
+
+- name: force software install and update if template is new
+  set_fact:
+    force_template_software_update: yes
+    force_template_patch_update: yes
+  when: sparsecopy.stat.exists == False

@@ -1,0 +1,10 @@
+---
+- name: Make sparse dd copy from vanilla distro image to generate template
+  shell: "dd if={{ raw_image_file }} of={{ image_template }} conv=sparse bs=1M"
+  when: skip_template_copy is not defined or not sparsecopy.stat.exists or force_template_create | bool
+
+- name: Create temporary mount point directory
+  file:
+    path: "{{ image_template_mountpoint }}"
+    state: directory
+

@@ -1,0 +1,28 @@
+---
+
+- name: Create work directory
+  ansible.builtin.file: 
+    path: "{{ working_directory }}"
+    state: directory
+
+- name: Create temporary directory
+  ansible.builtin.file: 
+    path: "{{ temporary_mount_point }}"
+    state: directory
+
+- name: Install software on host
+  ansible.builtin.apt:
+    name: "{{ item }}"
+  loop:
+    - binfmt-support 
+    - qemu-utils
+    - qemu-user-static
+    - nfs-kernel-server
+
+#- name: Configure NFS server
+#  ansible.builtin.template:
+#    src: export.j2
+#    dest: /etc/exports
+#    owner: root
+#    mode: 0755
+#  notify: restart nfs kernel server

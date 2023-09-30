@@ -1,0 +1,11 @@
+---
+
+- include: 01_image_edit.yml
+  delegate_to: '{{ image_host }}'
+  remote_user: "{{ image_host_user }}"
+  tags: generate-image
+  
+- include: 02_update_software.yml
+  delegate_to: '{{ image_host }}'
+  remote_user: "{{ image_host_user }}"
+  tags: generate-image

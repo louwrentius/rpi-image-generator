@@ -1,0 +1,31 @@
+---
+- include: mount_special_devices.yml
+
+- name: Temporary rename resolv.conf
+  shell: |
+    mv "{{ image_template_mountpoint }}/etc/resolv.conf" "{{ image_template_mountpoint }}/etc/resolv.conf.bak"
+    echo "nameserver {{ dns_server }} > {{ image_template_mountpoint }}/etc/resolv.conf"
+  when: distro == 'ubuntu'  
+
+- name: Copy executable for qemu (Arm on x86)
+  copy: 
+   remote_src: yes
+   src: /usr/bin/qemu-aarch64-static
+   dest: "{{ image_template_mountpoint }}/usr/bin/"
+   mode: 0755
+
+- name: Copy Apt update script for execution within chroot
+  template: 
+    src: "{{ distro }}_apt_upgrade.sh.j2"
+    dest: "{{ image_template_mountpoint }}/root/apt_upgrade.sh"
+    mode: 0755
+
+- name: Execute apt upgrade in CHROOT
+  shell: "chroot {{ image_template_mountpoint }} /bin/bash -c /root/apt_upgrade.sh"
+
+- name: Rename resolv.conf back to normal
+  shell: |
+    mv "{{ image_template_mountpoint }}/etc/resolv.conf.bak" "{{ image_template_mountpoint }}/etc/resolv.conf"
+  when: distro == 'ubuntu'  
+
+- include: umount_special_devices.yml

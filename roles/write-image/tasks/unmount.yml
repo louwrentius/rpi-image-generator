@@ -1,0 +1,40 @@
+---
+
+- name: List mountpounts
+  become: no
+  ansible.builtin.shell: "mount | grep {{ sdcard }}"
+  register: mountpoints
+  changed_when: no
+  failed_when: no
+  tags: 
+    - mount
+
+- name: Get type of device for USB card reader
+  become: no
+  shell: diskutil info /dev/"{{ sdcard }}" | grep Protocol
+  changed_when: no
+  register: devicetype
+  tags: mount
+
+- name: Check if SD card is USB or not
+  pause: 
+    prompt: "The target device {{ sdcard }} does not seem to be of type USB - please investigate"
+  tags: mount
+  when: "'USB' in devicetype"
+
+- name: Get path from stdout data
+  set_fact:
+    mountpoint: "{{ mountpoints.stdout.split('(')[0].strip() | regex_findall( sdcard+'.*(/Volumes/[^\\s].*)') | regex_replace( '\ ','\ ')   }}"
+  when: sdcard in mountpoints.stdout
+  tags: 
+    - mount
+
+- name: unmount mountpoint
+  become: true
+  shell: 
+    cmd: "diskutil unmount \"{{ mountpoint[0] }}\""
+  changed_when: yes
+  when: sdcard in mountpoints.stdout
+  tags: 
+    - mount
+

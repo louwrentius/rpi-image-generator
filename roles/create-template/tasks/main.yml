@@ -1,0 +1,44 @@
+---
+- include: 01_template_prep.yml
+  delegate_to: '{{ image_host }}'
+  remote_user: "{{ image_host_user }}"
+
+- include: 02_template_create.yml
+  delegate_to: '{{ image_host }}'
+  remote_user: "{{ image_host_user }}"
+  when: not sparsecopy.stat.exists or force_template_create | bool
+
+- include: resize_image_flow.yml # Resize the image before we install/update software
+  delegate_to: '{{ image_host }}'
+  remote_user: "{{ image_host_user }}"
+
+- include: mount_image.yml
+  delegate_to: '{{ image_host }}'
+  remote_user: "{{ image_host_user }}"
+
+- include: 03_template_configuration.yml
+  delegate_to: '{{ image_host }}'
+  remote_user: "{{ image_host_user }}"
+  when: not sparsecopy.stat.exists or force_template_update | bool
+
+- include: 04_template_install_software.yml
+  delegate_to: '{{ image_host }}'
+  remote_user: "{{ image_host_user }}"
+  when: force_template_software_update | bool
+  tags:
+    - install_software
+
+- include: 05_template_patch_update.yml
+  delegate_to: '{{ image_host }}'
+  remote_user: "{{ image_host_user }}"
+  when: force_template_patch_update | bool
+  tags:
+    - update_software
+
+- include: umount_image.yml
+  delegate_to: '{{ image_host }}'
+  remote_user: "{{ image_host_user }}"
+  
+- include: resize_image_flow.yml
+  delegate_to: '{{ image_host }}'
+  remote_user: "{{ image_host_user }}"

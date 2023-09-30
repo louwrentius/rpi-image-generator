@@ -1,0 +1,24 @@
+---
+- name: Install extra packages 
+  apt: 
+    update_cache: yes
+    pkg: 
+      - dstat 
+      - tcpdump
+      - sysstat 
+      - htop
+    state: present
+    cache_valid_time: 3600
+  
+- name: Remove snapd and cloud-init 
+  apt: 
+    pkg: 
+      - snapd
+      - cloud-init
+    state: absent
+
+- name: Purge old kernels
+  apt: 
+    purge: yes
+    autoremove: yes
+  tags: purge

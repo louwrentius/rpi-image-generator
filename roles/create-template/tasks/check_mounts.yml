@@ -1,0 +1,19 @@
+---
+- name: Gather facts
+  delegate_to: '{{ image_host }}'
+  remote_user: "{{ image_host_user }}"
+  ansible.builtin.setup:
+  
+- name: List all mounted devices
+  set_fact: 
+    registermount: "{{ ansible_mounts | selectattr('mount','equalto',image_template_mountpoint) }}"  
+
+- name: Fetch existing loop devices
+  shell: "losetup --list | grep {{ image_template }} | awk '{ print $1 }'"
+  register: registerloop
+  changed_when: false
+  failed_when: false
+
+#- name: debug loop device
+#  debug:
+#    msg: "{{ registerloop }}"

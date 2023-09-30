@@ -1,0 +1,22 @@
+---
+
+- name: Display Message 
+  vars: 
+    message: |
+      #
+      # Please put the SD card into the Raspberry Pi "{{ inventory_hostname_short }}" and boot it up.
+      # Waiting for one hour.
+      # 
+  debug:
+    msg: "{{ message.split('\n') }}"
+
+- name: Wait for the Raspberry Pi to boot up
+  wait_for_connection:
+    sleep: 10
+    timeout: 3600
+
+# Feel free to add additional Ansible tasks to be executed once the Pi boots for the first time from the new image
+
+- name: This is just a dummy task
+  debug:
+    msg: "Dummy Task running on {{ inventory_hostname_short }}"

@@ -1,0 +1,14 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    eth0:
+      dhcp4: no
+      addresses:
+        - {{ ansible_host }}/{{ netmask_cidr }}
+      gateway4: {{ gateway }}
+      nameservers:
+        search:
+          - {{ domain }}
+        addresses:
+          - {{ dns_server }}

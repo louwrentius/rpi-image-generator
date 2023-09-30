@@ -1,0 +1,8 @@
+---
+# These variables are placed here as a reference for command-line-usage
+force_image_update: false               # Update the image of the particular host
+force_template_update: false            # Update the template settings
+force_template_create: false            # Force creating a new template image from scratch (delete old one)
+skip_template_copy: false               # Does not generate a new template from vanilla distro image
+force_template_patch_update: false      # Forces template to apply apt updates including security updates
+force_template_software_update: false   # Forces software installation within template

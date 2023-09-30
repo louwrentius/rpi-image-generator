@@ -1,0 +1,77 @@
+---
+
+- name: gather data about localhost
+  become: no
+  command: uname
+  register: uname
+  changed_when: false
+  tags: mount
+
+- name: Check if SD card is inserted
+  become: no
+  stat:
+    path: "/dev/{{ sdcard }}"
+  register: sdcard_present
+
+- name: fail if SD card is not inserted
+  fail:
+    msg: SD card "{{ sdcard }}" is not detected. Aborting.
+  when: not sdcard_present.stat.exists 
+
+- include: unmount.yml
+
+- name: Check size of SD card
+  ansible.builtin.shell: |
+    diskutil info  "/dev/{{ sdcard }}" | grep "Disk Size" | awk '{ print $5}' | sed s/\(//g
+  register: sdcardsize
+
+- name: If SD card is bigger than sdcard_max_size throw error as it may be wrong device
+  assert:
+    that:
+      - sdcardsize.stdout  | int < sdcard_max_size
+    success_msg: "SDCARD Size is OK"
+    fail_msg: "SDCARD size is bigger than sdcard_max_size - wrong device?"
+    quiet: true
+
+- name: DD image to SD card
+  delegate_to: localhost 
+  become: yes
+  become_method: sudo
+  shell:
+    cmd: ssh {{image_host_user}}@{{image_host}} "dd if={{working_directory}}/{{inventory_hostname_short}} | gzip -1 -" | gunzip -1 | dd of=/dev/{{ sdcard_raw }} bs=1m 
+
+- name: Wait until the volume is automounted
+  wait_for:
+    timeout: 5
+  delegate_to: localhost
+
+- include: unmount.yml
+
+- name: Tell user SD card is ready for host {{ inventory_hostname_short }}
+  delegate_to: localhost
+  become: no
+  command: say "Raspberry Pi image is ready for host {{ inventory_hostname_short }}"
+
+- name: Wait until the SD card is Removed
+  delegate_to: localhost
+  vars: 
+    lasthost: "{{groups['servers'] | last}}"
+  wait_for:
+    path: "/dev/{{ sdcard_raw }}"
+    state: absent
+    timeout: 86400
+  when: inventory_hostname_short != lasthost
+
+- name: INSERT SD CARD FOR NEXT HOST {{ nexthost }}
+  vars: 
+    loopsize: "{{groups['servers'] | length }}"
+    lasthost: "{{groups['servers'] | last}}"
+    hostindex: "{{ groups['servers'].index(inventory_hostname_short) }}" 
+    nexthost: "{{ groups['servers'][hostindex | int + 1] }}"
+  wait_for:
+    path: "/dev/{{ sdcard_raw }}"
+    state: present
+    timeout: 86400 
+  when: 
+    - loopsize | int > 1 
+    - inventory_hostname_short != lasthost

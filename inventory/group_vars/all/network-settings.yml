@@ -1,0 +1,6 @@
+# Customise these variables to your own needs
+gateway: 10.0.1.1
+netmask_cidr: 24
+netmask_dotted: 255.255.255.0
+dns_server: 10.0.1.1
+domain: mydomain.loc

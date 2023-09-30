@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+systemctl stop ssh
+echo "* Generating locales"
+locale-gen
+echo "* Cleanup"
+rm /etc/ssh/sshd_config.d/rename_user.conf
+rm /etc/profile.d/wifi-check.sh
+echo "* Enabling and starting ssh"
+systemctl enable ssh 
+systemctl start ssh 
+#Uncomment this section to make IP address visible on console
+#echo "Welcome to Raspbery Pi {{ inventory_hostname_short }}" > /etc/issue
+#ip ad | grep global | awk '{ print $2 }' | cut -d "/" -f 1 >> /etc/issue
+echo "rc.local executed." | logger
+sleep 5
+mv /etc/rc.local /root/
+exit 0

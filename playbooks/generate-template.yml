@@ -1,0 +1,12 @@
+---
+# This playbook does the following:
+# 1. Generate a generic template image
+
+- hosts: servers
+  gather_facts: no
+  serial: 1
+  roles: 
+    - fetch-image
+    - create-template
+
+  

@@ -1,0 +1,7 @@
+---
+
+- include: write_image.yml
+  delegate_to: localhost
+  tags: write-image
+   
+  
