@@ -97,45 +97,30 @@ It's recommended to comment out all hosts you don't want to deploy in the invent
 
 ## Networking
 By default, a static IP address is configured for the Pi based on the ansible_host IP address in the inventory.
-If you need to configure the Pi with DHCP, you have to manually edit the 'create-template' role and change the appropriate template for network configuration. The 'files' folder of this role contains rc.local files with an option to show the
+If you need to configure the Pi with DHCP, you have to manually edit the 'create-template' role and change the appropriate template for network configuration. 
+
+The 'files' folder of the 'create-template' role contains rc.local files with an commented (disabled) option to show the
 Pi's IP-address as part of the login screen at the console, which can help determining the IP-address when DHCP is used.
 
 # Extra parameters
 
 ## force_template_update (bool)
-
-By default, if an image template already exists, it is not touched. To update/recreate it, either delete the file or use this option.
-The existing template will be overwritten with a fresh copy of the vanila image and recreated with all customisation.
-
+By default, if an image template already exists, it is not touched. To update/recreate it, either delete the file or use this option. The existing template will be overwritten with a fresh copy of the vanila image and recreated with all customisation.
 This option will force existing images for individual hosts to also be regenerated from the template.
 
 ## force_template_patch_update (bool)
-
-This will perform an apt update on the template image. Keeping the template up-to-date means that if you deploy multiple
-devices, they are all up-to-date after deployment and won't have to update 50+ security updates. 
+This will perform an apt update on the existing template image. Keeping the template up-to-date means that if you deploy multiple
+devices, they are all up-to-date after deployment and won't have to run updates individually. 
 
 ## skip_template_copy (bool)
-
 By default, if the template is updated, the entire image file will be overwritten with a fresh copy of the vanila image.
 This parameter assures that the existing template will *not* be overwritten, just mounted and edited to reflect the changes in the roles/playbooks/variables.
 
 ## force_image_update (bool)
+By default, if an individual Pi image has been generated previously, this image will be written to the SD card. If you want to generate a new image due to configuration changes, specify this parameter to force creation of a new image.
 
-By default, if an image has been generated previously, this image will be written to the SD card. If you want to generate a new image due to
-configuration changes, specify this parameter to force creation of a new image.
-
-## Manually mount image
-
-    losetup --find --partscan --show <imagefile.img>
-
-Based on the output - like '/dev/loop0' - mount the appropriate device:
-
-mount /dev/loop0p2 /mnt/folder 
-
-Now you can inspect the image contents. You can also start a chroot at /mount/folder and manually test commands as if you are running the computer based on this template for debugging purposes.
 
 ## How images are customised
-
 First a copy is made of the vanilla OS image, this copy will be the template from which all individual host images are derived.
 This copy is mounted on a loop device and the appropriate partition of the image is then mounted. From this moment out, files
 can be added or changed. 
@@ -145,6 +130,21 @@ lengthy 'apt upgrade' steps.
 
 **Chroot**
 To run the update process, we use 'chroot', which is like running the actual image as if we are running a Raspberry Pi.
-On Macs with ARM-based chips, it's possible to run an ARM-version of Raspian or Ubuntu. The role that generates the template, also copies the qemu-aarch64-static binary so we can emulate ARM on x86(-64) as well, although this is slower.
-We use Chroot also to install additional software inside the image.
+The role that generates the template, also copies the qemu-aarch64-static binary so we can emulate ARM on x86(-64). 
+On Macs with ARM-based chips, it's possible to run an ARM-version of Raspian or Ubuntu and the static binary is not used.  
+We also use chroot to install additional software on the template image.
 
+## Manually mount image
+These steps are executed on the host that acts as the image-generator.
+
+    losetup --find --partscan --show <imagefile.img>
+
+Based on the output - like '/dev/loop0' - mount the appropriate device:
+
+mount /dev/loop0p2 /mnt/folder 
+
+Now you can inspect the image contents. You can also start a chroot at /mount/folder and manually test commands as if you are running the computer based on this template for debugging purposes.
+
+Once the image is unmounted, you can clear all loop devices with:
+
+    losetup -D
