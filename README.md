@@ -24,6 +24,7 @@ The playbook loops from step 3 forward untill all hosts have their custom image 
 1. Update the inventory/shared/authorized_keys file with the appropriate public ssh key for the ansible user
 1. Update the inventory/inventory file with the correct host names and IP-addresses
 1. Determine the device name of the SDCARD reader/writer (Like: /dev/sdf or /dev/disk11 on MacOS)
+1. you need ansible installed
 
 # Configuring the environment
 Edit the following files in the group_vars/all directory as required:
