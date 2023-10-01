@@ -19,7 +19,7 @@ Imagine that you need to deploy 10 Raspberry Pis, this is what your workflow wil
 
 ![console](demo01)
 
-[demo01]: https://github.com/louwrentius/rpi-image-generator/blob/main/nextcard.png
+[demo01]: https://github.com/louwrentius/rpi-image-generator/blob/33b682834e8025c2c9ff66b93b3b3c14a347cf8b/nextcard.png
 
 The playbook loops from step 3 forward untill all hosts have their custom image written to SD card.
 
